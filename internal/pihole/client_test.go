@@ -21,18 +21,19 @@ func TestPiholeClient(t *testing.T) {
 				"10.7.82.10 misty.fog.lodge.chalko.com",
 				"10.7.82.100 grafana-101.fog.lodge.chalko.com",
 			}
+			wrapper := map[string]interface{}{
+				"config": map[string]interface{}{
+					"dns": map[string]interface{}{
+						"hosts": hosts,
+					},
+				},
+			}
 			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(hosts)
+			_ = json.NewEncoder(w).Encode(wrapper)
 			return
 		}
 
-		if r.Method == "POST" && r.URL.Path == "/api/config/dns/hosts" {
-			var body string
-			_ = json.NewDecoder(r.Body).Decode(&body)
-			if body != "10.7.82.101 influxdb-102.fog.lodge.chalko.com" {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
+		if r.Method == "PUT" && (r.URL.Path == "/api/config/dns/hosts/10.7.82.101 influxdb-102.fog.lodge.chalko.com" || r.URL.Path == "/api/config/dns/hosts/10.7.82.101%20influxdb-102.fog.lodge.chalko.com") {
 			w.WriteHeader(http.StatusOK)
 			return
 		}

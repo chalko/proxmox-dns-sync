@@ -98,27 +98,30 @@ func (c *Client) GetCustomHosts() ([]string, error) {
 		return nil, fmt.Errorf("pi-hole returned HTTP %d", resp.StatusCode)
 	}
 
-	var hosts []string
-	if err := json.NewDecoder(resp.Body).Decode(&hosts); err != nil {
+	var wrapper struct {
+		Config struct {
+			DNS struct {
+				Hosts []string `json:"hosts"`
+			} `json:"dns"`
+		} `json:"config"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&wrapper); err != nil {
 		return nil, err
 	}
 
-	return hosts, nil
+	return wrapper.Config.DNS.Hosts, nil
 }
 
 // AddCustomHost inserts an A record.
 func (c *Client) AddCustomHost(ip, host string) error {
-	reqURL := fmt.Sprintf("%s/api/config/dns/hosts", c.PiholeURL)
-	payload, err := json.Marshal(fmt.Sprintf("%s %s", ip, host))
-	if err != nil {
-		return err
-	}
+	encodedParam := url.PathEscape(fmt.Sprintf("%s %s", ip, host))
+	encodedParam = strings.ReplaceAll(encodedParam, "+", "%20")
 
-	req, err := http.NewRequest("POST", reqURL, bytes.NewBuffer(payload))
+	reqURL := fmt.Sprintf("%s/api/config/dns/hosts/%s", c.PiholeURL, encodedParam)
+	req, err := http.NewRequest("PUT", reqURL, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
 
 	sid := c.ensureSID()
 	req.Header.Set("X-FTL-SID", sid)
