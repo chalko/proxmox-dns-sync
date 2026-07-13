@@ -14,6 +14,7 @@ import (
 type Client struct {
 	PiholeURL      string
 	PiholePassword string
+	sid            string
 	httpClient     *http.Client
 }
 
@@ -28,6 +29,53 @@ func NewClient(url, password string) *Client {
 	}
 }
 
+// Authenticate exchanges the password for a Session ID (SID) on Pi-hole v6.
+func (c *Client) Authenticate() error {
+	reqURL := fmt.Sprintf("%s/api/auth", c.PiholeURL)
+	payload, err := json.Marshal(map[string]string{
+		"password": c.PiholePassword,
+	})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Post(reqURL, "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("authentication failed: HTTP %d", resp.StatusCode)
+	}
+
+	var wrapper struct {
+		Session struct {
+			SID string `json:"sid"`
+		} `json:"session"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&wrapper); err != nil {
+		return err
+	}
+
+	c.sid = wrapper.Session.SID
+	return nil
+}
+
+func (c *Client) ensureSID() string {
+	if c.sid != "" {
+		return c.sid
+	}
+	if err := c.Authenticate(); err != nil {
+		// Log or fallback to password directly if authentication fails (e.g. if password is the SID)
+		return c.PiholePassword
+	}
+	if c.sid == "" {
+		return c.PiholePassword
+	}
+	return c.sid
+}
+
 // GetCustomHosts retrieves custom A/AAAA records.
 func (c *Client) GetCustomHosts() ([]string, error) {
 	reqURL := fmt.Sprintf("%s/api/config/dns/hosts", c.PiholeURL)
@@ -35,7 +83,10 @@ func (c *Client) GetCustomHosts() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-FTL-SID", c.PiholePassword)
+
+	sid := c.ensureSID()
+	req.Header.Set("X-FTL-SID", sid)
+	req.Header.Set("sid", sid)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -68,7 +119,10 @@ func (c *Client) AddCustomHost(ip, host string) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-FTL-SID", c.PiholePassword)
+
+	sid := c.ensureSID()
+	req.Header.Set("X-FTL-SID", sid)
+	req.Header.Set("sid", sid)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -94,7 +148,10 @@ func (c *Client) DeleteCustomHost(ip, host string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("X-FTL-SID", c.PiholePassword)
+
+	sid := c.ensureSID()
+	req.Header.Set("X-FTL-SID", sid)
+	req.Header.Set("sid", sid)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
