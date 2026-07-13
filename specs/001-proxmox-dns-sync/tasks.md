@@ -92,9 +92,9 @@
 **Independent Test**: Wait 5 minutes after creating a VM and verify its hostname resolves.
 
 ### Implementation for User Story 3
-- [ ] T020 [US3] Create systemd service unit definition in `deploy/systemd/sync-proxmox-dns.service`
-- [ ] T021 [P] [US3] Create systemd timer unit definition in `deploy/systemd/sync-proxmox-dns.timer`
-- [ ] T022 [P] [US3] Create installation script in `deploy/systemd/install.sh`
+- [x] T020 [US3] Create systemd service unit definition in `deploy/systemd/sync-proxmox-dns.service`
+- [x] T021 [P] [US3] Create systemd timer unit definition in `deploy/systemd/sync-proxmox-dns.timer`
+- [x] T022 [P] [US3] Create installation script in `deploy/systemd/install.sh`
 
 **Checkpoint**: At this point, User Story 3 is complete and the daemon runs periodically.
 
@@ -102,8 +102,8 @@
 
 ## Phase 6: Polish & Cross-cutting Concerns
 
-- [ ] T023 Verify test coverage achieves >90% project-wide
-- [ ] T024 Run golangci-lint check and resolve warnings project-wide
+- [x] T023 Verify test coverage achieves >90% project-wide
+- [x] T024 Run golangci-lint check and resolve warnings project-wide
 
 ---
 

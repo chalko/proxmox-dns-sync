@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"proxmox-dns-sync/internal/sync"
 	"strings"
 	"time"
@@ -171,7 +170,3 @@ func (c *Client) getVMIP(node, resType string, vmid int) (string, error) {
 	return "", fmt.Errorf("no valid IP address found")
 }
 
-// URLEncodeHelper helper to URL-encode strings
-func URLEncodeHelper(s string) string {
-	return url.PathEscape(s)
-}

@@ -1,0 +1,9 @@
+[Unit]
+Description=Sync Proxmox VMs and LXCs to Pi-hole Local DNS
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile=/etc/default/sync-proxmox-dns
+ExecStart=/usr/local/bin/proxmox-dns-sync
