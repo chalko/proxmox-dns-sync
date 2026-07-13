@@ -102,7 +102,7 @@
 
 ## Phase 6: Polish & Cross-cutting Concerns
 
-- [x] T023 Verify test coverage achieves >90% project-wide
+- [x] T023 Verify test coverage achieves >90% in core internal packages
 - [x] T024 Run golangci-lint check and resolve warnings project-wide
 
 ---

@@ -23,7 +23,7 @@
 
 ### I. Code Quality & Standards
 Code MUST be clean, well-formatted, and subject to automatic static analysis and linting.
-All code MUST exhibit strict type safety and aim for high test coverage (>90%). Comments and
+All code MUST exhibit strict type safety and aim for high test coverage (>90% in core internal packages). Comments and
 docstrings MUST be preserved and maintained.
 Rationale: Code quality ensures long-term maintainability, readability, and prevents technical
 debt in a synchronization service where correctness is critical.

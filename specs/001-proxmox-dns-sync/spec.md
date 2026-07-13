@@ -84,7 +84,7 @@ As a system administrator, I want the synchronization to run automatically every
 
 - **SC-001**: 100% of running Proxmox VMs and LXCs with valid IPs have correct DNS records in Pi-hole.
 - **SC-002**: DNS records for stopped or deleted VMs/LXCs are cleaned up within 5 minutes.
-- **SC-003**: Synchronization completes execution in under 10 seconds under normal load (e.g., <100 nodes).
+- **SC-003**: Synchronization completes execution in under 2 seconds under normal load (e.g., <100 nodes).
 - **SC-004**: Synchronization operates continuously without manual restart or intervention.
 
 ## Assumptions
