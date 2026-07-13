@@ -1,0 +1,27 @@
+{{- if .Values.configMapSource.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "proxmox-dns-sync.fullname" . }}-source
+  labels:
+    {{- include "proxmox-dns-sync.labels" . | nindent 4 }}
+data:
+  go.mod: |
+{{ .Files.Get "src/go.mod" | indent 4 }}
+  main.go: |
+{{ .Files.Get "src/cmd/proxmox-dns-sync/main.go" | indent 4 }}
+  config.go: |
+{{ .Files.Get "src/internal/config/config.go" | indent 4 }}
+  logger.go: |
+{{ .Files.Get "src/internal/logger/logger.go" | indent 4 }}
+  pihole_client.go: |
+{{ .Files.Get "src/internal/pihole/client.go" | indent 4 }}
+  proxmox_client.go: |
+{{ .Files.Get "src/internal/proxmox/client.go" | indent 4 }}
+  models.go: |
+{{ .Files.Get "src/internal/sync/models.go" | indent 4 }}
+  state.go: |
+{{ .Files.Get "src/internal/sync/state.go" | indent 4 }}
+  sync.go: |
+{{ .Files.Get "src/internal/sync/sync.go" | indent 4 }}
+{{- end }}

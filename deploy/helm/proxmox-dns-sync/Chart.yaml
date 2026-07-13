@@ -1,0 +1,6 @@
+apiVersion: v2
+name: proxmox-dns-sync
+description: A Helm chart for Proxmox DNS Sync service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

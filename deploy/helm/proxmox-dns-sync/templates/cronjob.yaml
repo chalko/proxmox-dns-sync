@@ -1,0 +1,138 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "proxmox-dns-sync.fullname" . }}
+  labels:
+    {{- include "proxmox-dns-sync.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "proxmox-dns-sync.selectorLabels" . | nindent 12 }}
+        spec:
+          serviceAccountName: {{ include "proxmox-dns-sync.serviceAccountName" . }}
+          restartPolicy: {{ .Values.restartPolicy }}
+          {{- with .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: sync
+              image: "{{ if .Values.configMapSource.enabled }}{{ .Values.configMapSource.image.repository }}:{{ .Values.configMapSource.image.tag }}{{ else }}{{ .Values.image.repository }}:{{ .Values.image.tag }}{{ end }}"
+              imagePullPolicy: {{ if .Values.configMapSource.enabled }}{{ .Values.configMapSource.image.pullPolicy }}{{ else }}{{ .Values.image.pullPolicy }}{{ end }}
+              {{- if .Values.configMapSource.enabled }}
+              command: ["/bin/sh", "-c"]
+              args: ["cd /app && go run cmd/proxmox-dns-sync/main.go"]
+              {{- end }}
+              {{- with .Values.securityContext }}
+              securityContext:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              env:
+                - name: PM_API_URL
+                  value: {{ .Values.config.proxmoxUrl | quote }}
+                - name: PIHOLE_URL
+                  value: {{ .Values.config.piholeUrl | quote }}
+                - name: DOMAIN_SUFFIX
+                  value: {{ .Values.config.domainSuffix | quote }}
+                - name: STATE_FILE_PATH
+                  value: {{ .Values.config.stateFilePath | quote }}
+                - name: PROXMOX_VE_API_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      {{- if .Values.externalSecrets.enabled }}
+                      name: {{ .Values.externalSecrets.proxmox.secretName }}
+                      key: {{ .Values.externalSecrets.proxmox.secretKey }}
+                      {{- else }}
+                      name: {{ .Values.existingSecrets.proxmoxSecretName }}
+                      key: {{ .Values.existingSecrets.proxmoxSecretKey }}
+                      {{- end }}
+                - name: TF_VAR_pihole_password
+                  valueFrom:
+                    secretKeyRef:
+                      {{- if .Values.externalSecrets.enabled }}
+                      name: {{ .Values.externalSecrets.pihole.secretName }}
+                      key: {{ .Values.externalSecrets.pihole.secretKey }}
+                      {{- else }}
+                      name: {{ .Values.existingSecrets.piholeSecretName }}
+                      key: {{ .Values.existingSecrets.piholeSecretKey }}
+                      {{- end }}
+              {{- with .Values.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+              volumeMounts:
+                - name: state-volume
+                  mountPath: {{ dir .Values.config.stateFilePath | quote }}
+                {{- if .Values.configMapSource.enabled }}
+                - name: source-volume
+                  mountPath: /app/go.mod
+                  subPath: go.mod
+                - name: source-volume
+                  mountPath: /app/cmd/proxmox-dns-sync/main.go
+                  subPath: main.go
+                - name: source-volume
+                  mountPath: /app/internal/config/config.go
+                  subPath: config.go
+                - name: source-volume
+                  mountPath: /app/internal/logger/logger.go
+                  subPath: logger.go
+                - name: source-volume
+                  mountPath: /app/internal/pihole/client.go
+                  subPath: pihole_client.go
+                - name: source-volume
+                  mountPath: /app/internal/proxmox/client.go
+                  subPath: proxmox_client.go
+                - name: source-volume
+                  mountPath: /app/internal/sync/models.go
+                  subPath: models.go
+                - name: source-volume
+                  mountPath: /app/internal/sync/state.go
+                  subPath: state.go
+                - name: source-volume
+                  mountPath: /app/internal/sync/sync.go
+                  subPath: sync.go
+                {{- end }}
+                {{- with .Values.extraVolumeMounts }}
+                {{- toYaml . | nindent 16 }}
+                {{- end }}
+          volumes:
+            - name: state-volume
+              {{- if .Values.persistence.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{ else }}{{ include "proxmox-dns-sync.fullname" . }}-state{{ end }}
+              {{- else if .Values.persistence.hostPath }}
+              hostPath:
+                path: {{ .Values.persistence.hostPath }}
+                type: DirectoryOrCreate
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+            {{- if .Values.configMapSource.enabled }}
+            - name: source-volume
+              configMap:
+                name: {{ include "proxmox-dns-sync.fullname" . }}-source
+            {{- end }}
+            {{- with .Values.extraVolumes }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}

@@ -1,0 +1,94 @@
+# Default values for proxmox-dns-sync.
+
+image:
+  repository: proxmox-dns-sync
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Source code deployment mode
+# Set configMapSource.enabled to true to run the Go code directly from a ConfigMap
+# using the standard Golang container, eliminating the need to build and push custom images.
+configMapSource:
+  enabled: true
+  image:
+    repository: golang
+    tag: 1.26-alpine
+    pullPolicy: IfNotPresent
+
+schedule: "*/5 * * * *"
+
+# Restart policy for CronJob pod
+restartPolicy: OnFailure
+
+config:
+  proxmoxUrl: "https://10.7.82.10:8006/api2/json"
+  piholeUrl: "http://10.5.110.3"
+  domainSuffix: "fog.lodge.chalko.com"
+  stateFilePath: "/var/lib/proxmox-dns-sync/state.json"
+
+# External Secrets Operator configuration
+# Set externalSecrets.enabled to true to generate ExternalSecret manifests
+externalSecrets:
+  enabled: true
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  
+  proxmox:
+    secretName: proxmox-secrets
+    vaultPath: secret/data/app/proxmox
+    vaultProperty: api_token
+    secretKey: api_token
+
+  pihole:
+    secretName: pihole-secrets
+    vaultPath: secret/data/app/pihole
+    vaultProperty: password
+    secretKey: password
+
+# If using existing secrets instead of letting ESO create them,
+# or if externalSecrets.enabled is false, specify their names here:
+existingSecrets:
+  proxmoxSecretName: proxmox-secrets
+  proxmoxSecretKey: api_token
+  piholeSecretName: pihole-secrets
+  piholeSecretKey: password
+
+# ServiceAccount configuration
+serviceAccount:
+  create: true
+  # If not set and create is true, a name is generated using the fullname template
+  name: "app-sa"
+  annotations: {}
+
+# Persistence configuration for state registry
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  # Alternatively, use an existing PVC:
+  # existingClaim: ""
+  # Or use a hostPath (for simple single-node setup):
+  # hostPath: "/var/lib/proxmox-dns-sync"
+
+# Extra volume mounts if needed
+extraVolumeMounts: []
+# Extra volumes if needed
+extraVolumes: []
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 50m
+  #   memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
