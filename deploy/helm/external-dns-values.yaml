@@ -17,3 +17,6 @@ policy: sync
 registry: txt
 txtOwnerId: "lodge-k8s-cluster"
 txtPrefix: "external-dns-"
+
+extraArgs:
+  - --pihole-api-version=6
