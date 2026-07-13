@@ -1,0 +1,6 @@
+.agents/
+.agents
+*.exe
+*.test
+*.out
+proxmox-dns-sync
