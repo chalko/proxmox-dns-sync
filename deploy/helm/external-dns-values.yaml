@@ -1,0 +1,19 @@
+# Values configuration for external-dns Helm chart targeting Pi-hole v6
+provider: pihole
+
+env:
+  - name: EXTERNAL_DNS_PIHOLE_SERVER
+    value: "http://10.5.110.3"
+  - name: EXTERNAL_DNS_PIHOLE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: pihole-secrets
+        key: password
+
+domainFilters:
+  - "fog.lodge.chalko.com"
+
+policy: sync
+registry: txt
+txtOwnerId: "lodge-k8s-cluster"
+txtPrefix: "external-dns-"
