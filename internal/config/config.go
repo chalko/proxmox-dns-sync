@@ -20,9 +20,6 @@ func LoadConfig() *Config {
 	pveURL := os.Getenv("PM_API_URL")
 	pveToken := os.Getenv("PROXMOX_VE_API_TOKEN")
 	piholeURL := os.Getenv("PIHOLE_URL")
-	if piholeURL == "" {
-		piholeURL = "http://10.5.110.3"
-	}
 	piholePassword := os.Getenv("TF_VAR_pihole_password")
 	domainSuffix := os.Getenv("DOMAIN_SUFFIX")
 	if domainSuffix == "" {
