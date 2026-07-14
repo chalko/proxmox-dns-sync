@@ -26,6 +26,10 @@ func main() {
 		slog.Error("Missing required Proxmox credentials. Ensure PM_API_URL and PROXMOX_VE_API_TOKEN are set.")
 		os.Exit(1)
 	}
+	if cfg.PiholeURL == "" {
+		slog.Error("Missing required Pi-hole URL. Ensure PIHOLE_URL is set.")
+		os.Exit(1)
+	}
 	if cfg.PiholePassword == "" {
 		slog.Error("Missing required Pi-hole credentials. Ensure TF_VAR_pihole_password is set.")
 		os.Exit(1)
