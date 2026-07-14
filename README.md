@@ -55,7 +55,7 @@ The application is configured using environment variables:
 | `PM_API_URL` | Proxmox VE API endpoint url (e.g. `https://10.7.82.10:8006/api2/json`) | *Required* |
 | `PROXMOX_VE_API_TOKEN` | Proxmox API Token ID and Secret (e.g. `user@pam!tokenid=secret-uuid`) | *Required* |
 | `TF_VAR_pihole_password` | Pi-hole Web Admin / Application Password | *Required* |
-| `PIHOLE_URL` | Pi-hole base URL | `http://10.5.110.3` |
+| `PIHOLE_URL` | Pi-hole base URL (e.g. `https://10.5.110.3`) | *Required* |
 | `DOMAIN_SUFFIX` | Target DNS subdomain suffix | `fog.lodge.chalko.com` |
 | `STATE_FILE_PATH` | Path to persistent local state file | `/var/lib/proxmox-dns-sync/state.json` |
 
@@ -81,6 +81,7 @@ Execute the sync in dry-run mode to check mapping outputs without applying chang
 # Load environment credentials
 export PM_API_URL="https://10.7.82.10:8006/api2/json"
 export PROXMOX_VE_API_TOKEN="root@pam!terraform=SECRET-TOKEN"
+export PIHOLE_URL="https://10.5.110.3"
 export TF_VAR_pihole_password="SECRET-PIHOLE-PASSWORD"
 
 # Run dry run
@@ -98,7 +99,7 @@ The project includes systemd service files to run synchronization automatically 
    ```bash
    PM_API_URL="https://10.7.82.10:8006/api2/json"
    PROXMOX_VE_API_TOKEN="root@pam!terraform=SECRET-TOKEN"
-   PIHOLE_URL="http://10.5.110.3"
+   PIHOLE_URL="https://10.5.110.3"
    TF_VAR_pihole_password="SECRET-PIHOLE-PASSWORD"
    ```
 2. Run the deployment script to compile the binary, register systemd units, and start the timer:
