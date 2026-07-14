@@ -22,7 +22,7 @@ restartPolicy: OnFailure
 
 config:
   proxmoxUrl: "https://10.7.82.10:8006/api2/json"
-  piholeUrl: "http://10.5.110.3"
+  piholeUrl: "https://10.5.110.3"
   domainSuffix: "fog.lodge.chalko.com"
   stateFilePath: "/var/lib/proxmox-dns-sync/state.json"
 
